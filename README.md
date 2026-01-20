@@ -1,20 +1,23 @@
 # {project name}
-Template repository to back up and document local OpenFn deployments
+✏️TODO: Add project description
+_Template repository to back up and document local OpenFn deployments_
 
 ## About Your OpenFn Install
-On X Date, we installed version YYYY. 
+✏️ On [X Date], we installed version [YYYY]. 
 
 Key components include: 
-- Docker/Kubernetes
-- Monitoring: Prometheus & Grafana
-- Database: Postgres v??? (note if you used OpenFn DB, or existing DB setup)
+- Docker/Kubernetes ??✏️
+- Monitoring: Prometheus & Grafana ??✏️
+- Database: Postgres v???✏️ (note if you used OpenFn DB, or existing DB setup)
 
 ### Server Requirements
-See this document for your server specifications and completed deployment questionnaire: [ADD LINK]
+See this document for your server specifications and completed deployment questionnaire: 
+✏️ [ADD LINK]
 
 ## Managing Your Installation
-### Docker
+✏️ TODO: Edit these commands below, depending on Docker/Kubernetes and the client's setup
 
+### Docker
 **Setting up for the first time**
 
 ```sh
@@ -67,12 +70,17 @@ openssl req -new -x509 \
 ```
 
 ### Kubernetes
-TODO: Specify steps & commands for managing Kubernetes-based deployments
+✏️ TODO: Specify steps & commands for managing Kubernetes-based deployments
 
 ## Load Testing
+✏️TODO: Add link below
 See [XYZ] folder for the load testing K6 results. 
 
-## Support
+## Troubleshooting Tips
+✏️TODO: EDIT -> Here detail common errors & troubleshooting guidance. (Link to OpenFn docs if public guide is available.)
+
+## Get Help
+✏️Add any support guidance if specific support contacts or escalation paths are decided. 
 See below links for helpful resources, or get in touch with `support@openfn.org` for any private queries. 
 - [Deployment Guide](https://openfn.github.io/lightning/deployment.html)
 - [OpenFn Docs](https://docs.openfn.org/documentation/deploy/options)

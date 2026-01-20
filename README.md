@@ -1,7 +1,19 @@
 # {project name}
 Template repository to back up and document local OpenFn deployments
 
-## Docker
+## About Your OpenFn Install
+On X Date, we installed version YYYY. 
+
+Key components include: 
+- Docker/Kubernetes
+- Monitoring: Prometheus & Grafana
+- Database: Postgres v??? (note if you used OpenFn DB, or existing DB setup)
+
+### Server Requirements
+See this document for your server specifications and completed deployment questionnaire: [ADD LINK]
+
+## Managing Your Installation
+### Docker
 
 **Setting up for the first time**
 
@@ -53,3 +65,15 @@ openssl req -new -x509 \
   -key selfsigned.key -out selfsigned.crt -days 365 \
   -subj "/C=LC/L=Castries/O=St. Lucia/CN=$SERVER_IP"
 ```
+
+### Kubernetes
+TODO: Specify steps & commands for managing Kubernetes-based deployments
+
+## Load Testing
+See [XYZ] folder for the load testing K6 results. 
+
+## Support
+See below links for helpful resources, or get in touch with `support@openfn.org` for any private queries. 
+- [Deployment Guide](https://openfn.github.io/lightning/deployment.html)
+- [OpenFn Docs](https://docs.openfn.org/documentation/deploy/options)
+- [Community Forum](https://community.openfn.org/)

@@ -86,8 +86,6 @@ OPENFN_API_KEY=$HUB_API_KEY openfn pull <project-uuid> -c hub/newsite-config.jso
 bash update-site-projects.sh --deployment hub
 ```
 
-For example, here is a recording showing how `telecloud` was added as a new deployment: https://www.loom.com/share/d6b35dab890c41be93a89cd8fd2d1a1e
-
 ## Adding a new Hub deployment
 
 A "hub deployment" is a new OpenFn instance that hosts one or more facilities. 

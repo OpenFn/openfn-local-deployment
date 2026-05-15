@@ -1,8 +1,9 @@
-# {project name}
-✏️TODO: Add project description
-_Template repository to back up and document local OpenFn deployments_
+# Tooling to Support OpenFn Local Deployments
+This repo contains tooling to support setup, validation, and ongoing management of OpenFn local deployments. So far, this includes: 
+1. `/load-testing` scripts and documentation to help test your OpenFn deployment's performance
+2. `/change-management` scripts and docs to help migrate configuration between OpenFn deployments and automate change management steps
 
-## About Your OpenFn Install
+## TEMPLATE DOCS: About Your OpenFn Install
 ✏️ On [X Date], we installed version [YYYY]. 
 
 Key components include: 

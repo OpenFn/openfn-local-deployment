@@ -1,0 +1,23 @@
+# ✏️ The inventory this deployment was built from, with every credential removed.
+#
+# Copy the real one here at handover and replace each secret with <SANITISED>.
+# Do not commit the real file: see ../as-deployed/README.md on git history.
+#
+# The full set of options, with defaults and explanations, is in zeus:
+#   docker_deployments/v0.ansible/inventory/example.yml
+---
+all:
+  vars:
+    ansible_user: ✏️
+
+  children:
+    app:
+      hosts:
+        app-vm-01:
+          ansible_host: 10.0.0.11
+        app-vm-02:
+          ansible_host: 10.0.0.12
+    monitoring:
+      hosts:
+        mon-vm-03:
+          ansible_host: 10.0.0.13

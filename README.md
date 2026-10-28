@@ -1,88 +1,66 @@
 # Tooling to Support OpenFn Local Deployments
-This repo contains tooling to support setup, validation, and ongoing management of OpenFn local deployments. So far, this includes: 
-1. `/load-testing` scripts and documentation to help test your OpenFn deployment's performance
-2. `/change-management` scripts and docs to help migrate configuration between OpenFn deployments and automate change management steps
 
-## TEMPLATE DOCS: About Your OpenFn Install
-✏️ On [X Date], we installed version [YYYY]. 
+> ✏️ **This is a template.** Clone it per deployment, then work through the
+> checklist at the bottom before anything is shared with a client.
 
-Key components include: 
-- Docker/Kubernetes ??✏️
-- Monitoring: Prometheus & Grafana ??✏️
-- Database: Postgres v???✏️ (note if you used OpenFn DB, or existing DB setup)
+This repository holds the documentation and tooling for one OpenFn deployment:
+what was installed, how to run it, what to do when it alerts, and the exact
+configuration as it stands on the servers.
+
+It is written for the people who will operate the deployment after handover.
+
+1. [ARCHITECTURE.md](ARCHITECTURE.md) — the servers, how traffic reaches Lightning, ports and networks
+2. [OPERATIONS.md](OPERATIONS.md) — day-to-day commands, applying a new version, what to do when a server fails, secrets
+3. [MONITORING.md](MONITORING.md) — Grafana access, dashboards, the alert rules and which runbook each one points to
+4. [GITHUB_SYNC.md](GITHUB_SYNC.md) — connecting projects to GitHub for version control
+5. [`runbooks/`](runbooks) — one page per alert, with diagnosis and resolution steps
+6. [`deployment/`](deployment) — the inventory this deployment was built from, and the configuration as deployed
+7. [`load-testing/`](load-testing) — scripts and results for testing performance
+8. [`change-management/`](change-management) — how a change moves from app.openfn.org to this deployment
+
+## About Your OpenFn Install
+
+✏️ On **[DATE]**, we installed `openfn/lightning:[VERSION]` and
+`openfn/ws-worker:[VERSION]`.
+
+Users reach it at **https://openfn.example.org**.
+
+✏️ Delete whichever of these does not apply:
+
+- Docker Compose on every server. OpenFn deploys and updates it with Ansible
+  (zeus `docker_deployments/v0.ansible`), but nothing on the servers depends on
+  Ansible at run time: each server carries plain compose files, a README written
+  for that server, and helper scripts.
+- ✏️ One application server / two application servers, both serving at the same
+  time, joined in one Erlang cluster behind a load balancer.
+- Monitoring: Prometheus, Grafana and Loki on a dedicated monitoring server.
+  Every server pushes its metrics and logs there.
+- Database: ✏️ PostgreSQL [VERSION], provided and managed by **[the client]** /
+  deployed by OpenFn.
 
 ### Server Requirements
-See this document for your server specifications and completed deployment questionnaire: 
-✏️ [ADD LINK]
 
-## Managing Your Installation
-✏️ TODO: Edit these commands below, depending on Docker/Kubernetes and the client's setup
+✏️ Link the completed pre-deployment questionnaire here, so the specifications
+and prerequisites the client agreed to stay findable.
 
-### Docker
-**Setting up for the first time**
+- [Pre-deployment checklist](✏️ ADD LINK)
 
-```sh
-docker compose up -d postgres
-docker compose run lightning /app/bin/lightning eval Lightning.Release.migrate
-docker compose up -d
-```
+## Before sharing this with a client
 
-**Updating**
+- [ ] Every `example.org`, `10.0.0.x` and `COUNTRY-openfn-deployment` replaced
+- [ ] Every ✏️ resolved or deleted
+- [ ] Sections that do not apply to this deployment deleted, not left blank
+- [ ] `deployment/as-deployed/` captured from the servers, with secrets removed
+- [ ] Secrets checked for in the git **history**, not only the current files
+- [ ] Alert table in MONITORING.md matches the rules actually deployed
+- [ ] Someone other than the author has read it end to end
 
-Run `./update_check` and confirm if you want the script to change the compose file
+> A secret committed once stays in the history after a later commit removes it.
+> If one gets in, rotate it rather than deleting the commit.
 
-```sh
-./update_check
-Tags matching the 'latest' digest:
+## Other resources
 
-  openfn/lightning:latest -> v2.10.6
-  docker-compose.yml      -> v2.10.5
-  ⚠️ Update available
-
-  openfn/ws-worker:latest -> v1.8.6
-  docker-compose.yml      -> v1.8.5
-  ⚠️ Update available
-Do you want to update openfn/lightning to v2.10.6? (y/N) y
-Updated openfn/lightning to tag v2.10.6 in docker-compose.yml
-Backup created at docker-compose.yml.bak
-Do you want to update openfn/ws-worker to v1.8.6? (y/N) y
-Updated openfn/ws-worker to tag v1.8.6 in docker-compose.yml
-Backup created at docker-compose.yml.bak
-```
-
-Then run `docker compose up -d` to restart/recreate the containers.
-
-**Copying across files to a server**
-
-```sh
-rsync -azv --exclude-from=.gitignore . $SERVER_IP:~/docker
-```
-
-**Self-signed certs**
-
-```sh
-# Generate a private key
-openssl genrsa -out selfsigned.key 2048
-
-# Create a self-signed certificate
-openssl req -new -x509 \
-  -key selfsigned.key -out selfsigned.crt -days 365 \
-  -subj "/C=LC/L=Castries/O=St. Lucia/CN=$SERVER_IP"
-```
-
-### Kubernetes
-✏️ TODO: Specify steps & commands for managing Kubernetes-based deployments
-
-## Load Testing
-✏️TODO: Add link below
-See [XYZ] folder for the load testing K6 results. 
-
-## Troubleshooting Tips
-✏️TODO: EDIT -> Here detail common errors & troubleshooting guidance. (Link to OpenFn docs if public guide is available.)
-
-## Get Help
-✏️Add any support guidance if specific support contacts or escalation paths are decided. 
-See below links for helpful resources, or get in touch with `support@openfn.org` for any private queries. 
-- [Deployment Guide](https://openfn.github.io/lightning/deployment.html)
-- [OpenFn Docs](https://docs.openfn.org/documentation/deploy/options)
-- [Community Forum](https://community.openfn.org/)
+- [Deploying Lightning](https://openfn.github.io/lightning/deployment.html)
+- [OpenFn documentation](https://docs.openfn.org)
+- [OpenFn CLI](https://docs.openfn.org/documentation/cli)
+- [Lightning on GitHub](https://github.com/OpenFn/lightning)

@@ -29,6 +29,15 @@ lives in zeus:
 | `openfn-agents/*` | `roles/monitoring_agents/templates/*` |
 | `openfn-monitoring/*` | `roles/monitoring_server/templates/*` |
 
+✏️ Standalone shape (`docker_deployments/v0.standalone`):
+
+| File | Generated from |
+|---|---|
+| `docker-compose.yml`, `env.txt`, `worker.env.txt`, `bin/*` | `roles/stack/templates/*` |
+| `nginx/openfn-upstream.conf`, `nginx/openfn` | `roles/proxy/templates/*` (the upstream file is operator state, captured as found) |
+| `openfn-proxy/*` | `roles/proxy/templates/*` |
+| `openfn-kuma/*` | `roles/uptime_kuma/templates/*` |
+
 ## Recapturing this
 
 Copy the files from each server, then replace every value whose key contains

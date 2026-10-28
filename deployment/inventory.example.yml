@@ -4,7 +4,14 @@
 # Do not commit the real file: see ../as-deployed/README.md on git history.
 #
 # The full set of options, with defaults and explanations, is in zeus:
-#   docker_deployments/v0.ansible/inventory/example.yml
+#   docker_deployments/v0.ansible/inventory/example.yml      (clustered shape)
+#   docker_deployments/v0.standalone/inventory/example.yml   (standalone shape)
+#
+# ✏️ Standalone shape, the groups are instead:
+#   app:   app-vm-01 (node_rank: primary, lightning_serving: true)
+#          app-vm-02 (node_rank: secondary, lightning_serving: false)
+#   proxy: proxy-vm-03
+# and there is no monitoring or database group.
 ---
 all:
   vars:

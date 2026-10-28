@@ -3,6 +3,11 @@
 > ✏️ **Template.** Replace every `example.org`, every `10.0.0.x`, and every
 > `COUNTRY-openfn-deployment` before this goes to a client. Delete anything
 > that does not apply to this deployment rather than leaving it unanswered.
+✏️ Two monitoring designs exist. The clustered shape uses Prometheus, Grafana and
+Loki, described first. The standalone shape uses Uptime Kuma on the proxy server,
+described at the end; on such a deployment delete everything between here and
+that section.
+
 ## Overview
 
 Three layers, as in every OpenFn deployment: emitters, storage, visualisation. The difference here
@@ -150,3 +155,41 @@ has to be made at the source or the next managed run puts the old version back.
 
 For a quick experiment, edit the file on the monitoring server and
 `sudo /opt/openfn-monitoring/bin/openfn-restart grafana`, knowing it is temporary.
+
+## Uptime Kuma
+
+✏️ Standalone shape only; delete on a clustered deployment.
+
+Uptime Kuma runs in Docker on the proxy server (`/opt/openfn-kuma/`), beside
+Nginx, in its own compose project. It probes the public address and each stack
+and sends the alert when the serving stack stops answering. It routes no
+traffic.
+
+**UI:** ✏️ `https://status.openfn.example.org` / `http://10.0.0.13:3001`
+(private network or VPN only). The admin account was created at handover;
+change its password and create your own accounts.
+
+### Monitors
+
+| Name | URL | Interval |
+|---|---|---|
+| OpenFn (public) | `https://openfn.example.org/health_check` | 60 s, the alert that matters |
+| Stack primary (app-vm-01) | `http://10.0.0.11:4000/health_check` | 60 s |
+| Stack backup (app-vm-02) | `http://10.0.0.12:4000/health_check` | 60 s, shows Down while parked, which is expected; pause it |
+
+### Notifications
+
+Email through ✏️ `smtp.example.org`, to ✏️ `ops@example.org`. Set in Kuma under
+Settings, Notifications, applied to every monitor. Alerts are always visible in
+the Kuma UI as well.
+
+### What an alert means
+
+| Alert | Likely meaning | Do |
+|---|---|---|
+| OpenFn (public) Down and the serving stack's monitor Down | that stack has failed | [runbooks/STACK_DOWN.md](runbooks/STACK_DOWN.md) |
+| OpenFn (public) Down but the serving stack's monitor Up | Nginx or the proxy's network | [runbooks/PROXY_DOWN.md](runbooks/PROXY_DOWN.md) |
+| only the parked stack's monitor Down | expected while it is parked | nothing |
+
+Kuma's own data (monitors, history, accounts) lives in the Docker volume
+`openfn-kuma_kuma_data`; a managed run never touches it.

@@ -1,5 +1,8 @@
 # Connecting OpenFn to the Cloudflare load balancer
 
+> Shape: **clustered** (`v0.ansible`). On a standalone deployment delete this
+> runbook; its alerts come from Grafana, which that shape does not run.
+
 > ✏️ **Template.** Replace every `example.org`, every `10.0.0.x`, and every
 > `COUNTRY-openfn-deployment` before this goes to a client. Delete anything
 > that does not apply to this deployment rather than leaving it unanswered.

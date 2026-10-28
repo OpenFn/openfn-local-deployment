@@ -28,15 +28,22 @@ Users reach it at **https://openfn.example.org**.
 ✏️ Delete whichever of these does not apply:
 
 - Docker Compose on every server. OpenFn deploys and updates it with Ansible
-  (zeus `docker_deployments/v0.ansible`), but nothing on the servers depends on
-  Ansible at run time: each server carries plain compose files, a README written
-  for that server, and helper scripts.
-- ✏️ One application server / two application servers, both serving at the same
-  time, joined in one Erlang cluster behind a load balancer.
-- Monitoring: Prometheus, Grafana and Loki on a dedicated monitoring server.
-  Every server pushes its metrics and logs there.
-- Database: ✏️ PostgreSQL [VERSION], provided and managed by **[the client]** /
-  deployed by OpenFn.
+  (zeus `docker_deployments/v0.ansible` for the clustered shape,
+  `docker_deployments/v0.standalone` for the standalone shape), but nothing on
+  the servers depends on Ansible at run time: each server carries plain compose
+  files, a README written for that server, and helper scripts.
+- ✏️ **Clustered shape:** one application server / two application servers,
+  both serving at the same time, joined in one Erlang cluster behind a load
+  balancer. Database provided and managed by **[the client]** / deployed by
+  OpenFn on its own server.
+- ✏️ **Standalone shape:** two application servers, each a complete stack with
+  its own PostgreSQL, only one serving at a time, behind an Nginx failover proxy
+  on a third, always-up server. Moving traffic is a deliberate, manual switch.
+- ✏️ Monitoring: Prometheus, Grafana and Loki on a dedicated monitoring server,
+  every server pushing its metrics and logs there (clustered shape) / Uptime
+  Kuma on the proxy server, probing the public address and both stacks
+  (standalone shape).
+- Database: ✏️ PostgreSQL [VERSION].
 
 ### Server Requirements
 
@@ -50,6 +57,8 @@ and prerequisites the client agreed to stay findable.
 - [ ] Every `example.org`, `10.0.0.x` and `COUNTRY-openfn-deployment` replaced
 - [ ] Every ✏️ resolved or deleted
 - [ ] Sections that do not apply to this deployment deleted, not left blank
+- [ ] The shape that does not apply deleted everywhere: README, ARCHITECTURE,
+      OPERATIONS, MONITORING, and the runbooks that belong to the other shape
 - [ ] `deployment/as-deployed/` captured from the servers, with secrets removed
 - [ ] Secrets checked for in the git **history**, not only the current files
 - [ ] Alert table in MONITORING.md matches the rules actually deployed

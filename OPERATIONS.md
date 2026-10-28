@@ -31,6 +31,21 @@ Prometheus target with its health), `openfn-logs [service]`, `openfn-restart [se
 
 Run `openfn-status` first whenever something looks wrong.
 
+✏️ **Standalone shape**, the scripts on each application server are instead:
+
+| Command | Does |
+|---|---|
+| `openfn-status` | containers on this stack, PostgreSQL and Lightning health, this stack's role and whether it serves |
+| `openfn-logs [service]` | follow logs: `lightning`, `worker`, `postgres` |
+| `openfn-backup [dir]` | timestamped gzipped `pg_dump` of this stack's database (default `/opt/openfn/backups`) |
+| `openfn-restart` | recreate Lightning and the worker on this stack (serving stack only) |
+| `openfn-update <version> [worker-version] [--no-restart]` | move this stack to a new version: backs up, migrates its own database, restarts if serving |
+| `openfn-activate` | start Lightning and the worker here, wait until healthy, mark this stack serving |
+| `openfn-standby` | stop Lightning and the worker here (PostgreSQL keeps running), mark this stack not serving |
+
+and on the proxy server, on the PATH: `openfn-switch status`, `openfn-switch
+primary`, `openfn-switch backup`.
+
 ### Compose directly
 
 The scripts wrap `docker compose`. If you need the raw commands:
@@ -79,6 +94,21 @@ server is back.
 **Afterwards, tell OpenFn the new version.** The deployment inventory has to match the servers;
 otherwise the next managed run reverts the servers to the inventory's version.
 
+✏️ **Standalone shape**, each stack owns its database, so each runs its own migration and there
+is no primary-only rule. The order that keeps users on a stack already running the new version:
+
+```sh
+# 1. on the PARKED stack: pulls, backs up, migrates its database, starts nothing
+sudo /opt/openfn/bin/openfn-update v2.X.Y
+# 2. move traffic to it: openfn-activate there, openfn-switch on the proxy, openfn-standby on the other
+# 3. on the now-parked stack: the same update
+sudo /opt/openfn/bin/openfn-update v2.X.Y
+# 4. switch back if production should sit on its usual stack
+```
+
+Updating the serving stack in place also works; it restarts into the new version, which costs a
+few minutes while the containers drain.
+
 Known gap: the update does not yet tell Cloudflare to drain a server before it restarts, so a small
 number of in-flight requests can fail during step 2 and step 3. This is the brief error seen during
 the failover test on 2026-09-22. OpenFn is adding the drain; it needs nothing from the client beyond a
@@ -92,6 +122,13 @@ reporting` alert is telling you. See [runbooks/NODE_NOT_REPORTING.md](runbooks/N
 
 One exception: database migrations are tied to `app-vm-01`. If that is the server lost for good,
 tell OpenFn before the next version update.
+
+✏️ **Standalone shape**, nothing moves by itself. Uptime Kuma raises the alert; a person confirms
+the serving stack is really down and runs the three commands in
+[ARCHITECTURE.md](ARCHITECTURE.md#failover): `openfn-activate` on the other stack, `openfn-switch`
+on the proxy, `openfn-standby` on the failed stack once it is reachable. See
+[runbooks/STACK_DOWN.md](runbooks/STACK_DOWN.md). If the proxy server itself is down, nothing
+reaches OpenFn at either site: see [runbooks/PROXY_DOWN.md](runbooks/PROXY_DOWN.md).
 
 ## Docker Hardened Images and the registry login
 
@@ -128,6 +165,25 @@ For reference, and for anyone reviewing the setup later.
 - **`/i/*`** must be excluded from bot protection, rate limiting and any login requirement. That is
   where webhooks arrive.
 
+## Failover proxy
+
+✏️ Standalone shape only; delete on a clustered deployment, and delete the Cloudflare section
+above on a standalone one.
+
+| What | Where |
+|---|---|
+| The stack that receives traffic | `/etc/nginx/conf.d/openfn-upstream.conf`, edited only by `openfn-switch` |
+| Site configuration | `/etc/nginx/sites-available/openfn` |
+| The two stacks' addresses | `/opt/openfn-proxy/stacks.env` |
+| Switch history | `/var/log/openfn-proxy/switch.log` |
+| Access and error logs | `/var/log/openfn-proxy/` (no request bodies) |
+| Certificate | `/etc/letsencrypt/live/openfn.example.org/`, renewed by certbot's timer |
+
+`openfn-switch` refuses a target that does not answer `/health_check` (start it with
+`openfn-activate` first); `--force` overrides. The reload keeps Nginx running: new connections go
+to the new stack, connections in flight finish. If the new configuration is rejected the old one
+is put back and nothing changes.
+
 ## Internal firewall
 
 TCP **4369** and **9100** between `10.0.0.11` and `10.0.0.12`, both directions. Details in
@@ -139,6 +195,13 @@ TCP **4369** and **9100** between `10.0.0.11` and `10.0.0.12`, both directions. 
 PostgreSQL on `10.0.0.14:5432`, managed by the client. Both application servers connect as
 `lightning`; the monitoring server connects as the read-only role `mon_ro` (holds `pg_monitor`, no
 write access). Backups, upgrades and access control on that server are the client's.
+
+✏️ **Standalone shape**, each stack has its own PostgreSQL inside its compose project, reached
+only inside Docker, plain text on the one host. `openfn-backup` dumps it; copy the files off the
+host, the database is the one thing that cannot be regenerated. The same dump restores on the
+other stack (same encryption key), which is how a stack is re-seeded after a long time parked:
+with Lightning stopped there, drop and recreate the database and `psql` the dump in. Work done
+while a stack served stays in that stack's database; `openfn-backup` before parking preserves it.
 
 `DATABASE_URL` in `/opt/openfn/.env` carries the `lightning` password percent-encoded. If the client
 rotates that password, tell OpenFn: it is set in the deployment inventory and rendered onto both
@@ -183,6 +246,8 @@ Start with the alert you are holding and its runbook:
 | `Cluster split`, `Cluster probe not reporting` | [runbooks/CLUSTER_SPLIT.md](runbooks/CLUSTER_SPLIT.md) |
 | `Database unreachable`, `Database monitoring blind` | [runbooks/DATABASE_UNREACHABLE.md](runbooks/DATABASE_UNREACHABLE.md) |
 | `Background jobs not running`, `Oban producer errors` | [runbooks/BACKGROUND_JOBS_NOT_RUNNING.md](runbooks/BACKGROUND_JOBS_NOT_RUNNING.md) |
+| ✏️ standalone: Uptime Kuma says the public address is down and the serving stack is down | [runbooks/STACK_DOWN.md](runbooks/STACK_DOWN.md) |
+| ✏️ standalone: the public address is down but the serving stack answers on its own address | [runbooks/PROXY_DOWN.md](runbooks/PROXY_DOWN.md) |
 
 Some runbook steps use the Ansible tooling (`validate.yaml`, `site.yaml --limit`); those are the
 steps OpenFn runs. Everything up to them can be done on the servers.
